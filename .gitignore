@@ -68,3 +68,6 @@ config.json
 
 # VSCode nonsense.
 .vscode/
+
+# Folder that contains the sound effects.
+effects/
