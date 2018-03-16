@@ -1,0 +1,30 @@
+{
+  "name": "discord-soundboard-node",
+  "version": "1.0.0",
+  "description": "A Node.js port of discord-soundboard made by @chutchinson.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MGaje/discord-soundboard-node.git"
+  },
+  "author": "Michael Gajewski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MGaje/discord-soundboard-node/issues"
+  },
+  "homepage": "https://github.com/MGaje/discord-soundboard-node#readme",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "ffmpeg-binaries": "^3.2.2-3",
+    "node-opus": "^0.2.7",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.7",
+    "@types/winston": "^2.3.8",
+    "typescript": "^2.7.2"
+  }
+}

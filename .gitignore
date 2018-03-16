@@ -57,3 +57,14 @@ typings/
 # dotenv environment variables file
 .env
 
+# NPM generated file.
+*-lock.json
+
+# Build directory.
+build/
+
+# Bot config file.
+config.json
+
+# VSCode nonsense.
+.vscode/
