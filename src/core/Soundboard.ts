@@ -1,11 +1,10 @@
-import * as path from "path";
-
 import * as Discord from "discord.js"
 import * as Winston from "winston";
 
 import { DataStore } from "./DataStore";
 import { Config } from "./Config";
 import { CommandHandler } from "../handlers/CommandHandler/CommandHandler";
+import { MessageHandler } from "../handlers/MessageHandler/MessageHandler";
 
 export class Soundboard
 {
@@ -15,6 +14,7 @@ export class Soundboard
     private config: Config;
     private dataStore: DataStore;
     private commandHandler: CommandHandler;
+    private messageHandler: MessageHandler;
     private stdin: NodeJS.Socket;
 
     /**
@@ -27,6 +27,7 @@ export class Soundboard
         this.config = require("../../config.json");
         this.dataStore = new DataStore();
         this.commandHandler = new CommandHandler(this.dataStore);
+        this.messageHandler = new MessageHandler(this.dataStore);
         this.isVoiceConnected = false;
     }
 
@@ -36,7 +37,7 @@ export class Soundboard
     public async run(): Promise<void>
     {
         Winston.debug("Setting up event listeners.");
-        this.setupListeners();
+        await this.setupListeners();
 
         Winston.info("Attempting to login.");
         await this.botClient.login(this.config.botToken);
@@ -45,22 +46,44 @@ export class Soundboard
     /**
      * Sets up event listeners.
      */
-    private setupListeners()
+    private async setupListeners()
     {
         // Upon successful Discord connection.
-        this.botClient.on("ready", () =>
+        this.botClient.on("ready", async () =>
         {
             Winston.info("Connected to Discord. Ready.");
+
             Winston.info("Attempting to join voice channel.");
-            this.connectToVoice();
+            await this.connectToVoice();
+            Winston.info("Connected to voice channel.");
+        });
+
+        // Upon receiving a Discord message.
+        this.botClient.on("message", async msg =>
+        {
+            try
+            {
+                await this.messageHandler.handle({ msg: msg, voiceConnection: this.voiceConnection, botUser: this.botClient.user });
+            }
+            catch (error)
+            {
+                Winston.error(error.toString());
+            }
         });
 
         // Open user input stream in the console.
         this.stdin = process.openStdin();
         this.stdin.addListener("data", d =>
         {
-            const input: string = d.toString().trim();
-            this.commandHandler.handle({ command: input, discordClient: this.botClient, stdin: this.stdin });
+            try
+            {
+                const input: string = d.toString().trim();
+                this.commandHandler.handle({ command: input, discordClient: this.botClient, stdin: this.stdin });
+            }
+            catch (error)
+            {
+                Winston.error(error.toString());
+            }
         });
     }
 
@@ -77,6 +100,8 @@ export class Soundboard
         }
 
         this.voiceConnection = await voiceChannel.join();
+
+        // These events don't seem to be emitted?
         this.voiceConnection.on("debug", msg => 
         {
             Winston.debug(`[Voice Connection Debug] ${msg}`);
@@ -105,10 +130,5 @@ export class Soundboard
             this.voiceConnection = null;
             this.isVoiceConnected = false;
         });
-
-        const effectsPath: string = path.resolve(__dirname, "../../effects");
-        const effectFile: string = path.join(effectsPath, "boop.wav");
-
-        const d: any = this.voiceConnection.playFile(effectFile);
     }
 }

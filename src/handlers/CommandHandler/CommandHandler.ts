@@ -14,6 +14,7 @@ export class CommandHandler implements Handler<CommandHandlerData>
 
     /**
      * CommandHandler constructor.
+     * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
     constructor(dataStore?: DataStore)
@@ -24,10 +25,6 @@ export class CommandHandler implements Handler<CommandHandlerData>
     /**
      * Handle incoming commands from user input.
      * @param {CommandHandlerData} data Specified data that may be needed for a command.
-     * 
-     * data[0] -> (string) command string.
-     * data[1] -> (Discord.Client) Discord client.
-     * data[2] -> (NodeJS.Socket) The user input stream.
      */
     public handle(data: CommandHandlerData)
     {
