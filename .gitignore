@@ -71,3 +71,4 @@ config.json
 
 # Folder that contains the sound effects.
 effects/
+sound-files/
