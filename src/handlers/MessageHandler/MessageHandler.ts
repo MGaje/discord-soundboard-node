@@ -15,7 +15,7 @@ import { Utility } from "../../util/Util";
  */
 export class MessageHandler implements Handler<MessageHandlerData>
 {
-    private static effectsPath: string = path.resolve(__dirname, "../../../sound-files");
+    private static effectsPath: string = path.resolve(__dirname, "../../../effects-normalized");
 
     private dataStore: DataStore;
 
@@ -49,12 +49,6 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // If the message is in a DM, handle new file upload.
         if (data.msg.guild === null)
         {
-            if (data.msg.attachments.size === 0)
-            {
-                data.msg.channel.send("GIMME FILES TO CONSUME PLS.");
-                return;
-            }
-
             this.handleUpload(data.msg);
 
             return;
@@ -75,23 +69,26 @@ export class MessageHandler implements Handler<MessageHandlerData>
 
             // Parse the message into the following format:
             // parsedMessage[0] = mentioned bot user.
-            // parsedMessage[1] = command or sound to play.
+            // parsedMessage[1] = command.
+            // parsedMessage[n where n > 1] = arguments to the command.
             const parsedMessage: string[] = data.msg.content.split(" ");
+            const args: string[] = parsedMessage.slice(2);
 
-            this.handleCommand(parsedMessage[1], data.voiceConnection);
+            this.handleCommand(parsedMessage[1], args, data.voiceConnection);
         }
     }
 
     /**
      * Handle the command sent to the bot via a Discord message.
      * @param {string} cmd The command to handle.
+     * @param {string[]} args The arguments to the command.
      * @param {Discord.VoiceConnection} voiceConnection The voice connection to use to play sound.
      */
-    private async handleCommand(cmd: string, voiceConnection: Discord.VoiceConnection)
+    private handleCommand(cmd: string, args: string[], voiceConnection: Discord.VoiceConnection)
     {
-        if (cmd.length === 0)
+        if (!cmd || cmd.length === 0)
         {
-            throw new Error("Command cannot be empty.");
+            throw new Error("Command cannot be null or empty.");
         }
 
         // TODO
@@ -101,7 +98,30 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // facilitate the actual wav file playing. However, the behavior now is the behavior
         // seen in the .NET version of the bot.
 
-        const effectFile: string = path.join(MessageHandler.effectsPath, `${cmd}.mp3`);
+        switch (cmd.toLowerCase())
+        {
+            case "play":
+                return this.handlePlay(args[0], voiceConnection);
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 
+     * @param toPlay 
+     * @param voiceConnection 
+     */
+    private handlePlay(toPlay: string, voiceConnection: Discord.VoiceConnection)
+    {
+        if (!toPlay || toPlay.length === 0)
+        {
+            throw new Error("toPlay cannot be null or empty.")
+        }
+
+        // Play local file.
+        const effectFile: string = path.join(MessageHandler.effectsPath, `${toPlay}.wav`);
         voiceConnection.playFile(effectFile);
     }
 
@@ -111,20 +131,39 @@ export class MessageHandler implements Handler<MessageHandlerData>
      */
     private async handleUpload(discordMessage: Discord.Message)
     {
-        // TODO:
-        // -Add support for multiple attachments.
-        // -Add support for youtube links.
-        const attachment: Discord.MessageAttachment = discordMessage.attachments.first();
+        let localFile: string = null;
+        if (discordMessage.attachments.size === 0)
+        {
+            const youtubeRe: RegExp = /^(https:\/\/www\.youtube\.com\/watch\?v=[\w-]+) (\w+)$/;
+            if (youtubeRe.test(discordMessage.content))
+            {
+                Winston.info("Downloading from youtube...");
+                discordMessage.channel.send(`Downloading from youtube.`);
 
-        Winston.debug(`Attempting to download file "${attachment.filename}".`);
-        discordMessage.channel.send(`Downloading '${attachment.filename}'.`);
+                const matches: RegExpMatchArray = discordMessage.content.match(youtubeRe);
+                localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
+                
+                Winston.info("Download complete from youtube.");
+                discordMessage.channel.send(`Download complete.`);
+            }
+        }
+        else
+        {
+            // TODO:
+            // -Add support for multiple attachments.
+            // -Add support for youtube links.
+            const attachment: Discord.MessageAttachment = discordMessage.attachments.first();
 
-        // Download file onto local disk for processing.
-        const localFile: string = path.join(__dirname, `../../__${attachment.filename}`)
-        await Utility.downloadFile(attachment.url, localFile);
+            Winston.debug(`Attempting to download file "${attachment.filename}".`);
+            discordMessage.channel.send(`Downloading '${attachment.filename}'.`);
 
-        Winston.debug(`Downloaded file "${attachment.filename}".`);
-        discordMessage.channel.send(`Downloaded file '${attachment.filename}'.`);
+            // Download file onto local disk for processing.
+            //const localFile: string = path.join(__dirname, `../../__${attachment.filename}`)
+            localFile = await Utility.downloadFile(attachment.url, attachment.filename);
+
+            Winston.debug(`Downloaded file "${localFile}".`);
+            discordMessage.channel.send(`Downloaded file '${localFile}'.`);
+        }
 
         Winston.debug(`Attempting to normalize file.`);
         discordMessage.channel.send(`Processing file.`);

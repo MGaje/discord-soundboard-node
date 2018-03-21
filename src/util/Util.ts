@@ -4,7 +4,9 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import * as path from "path";
 
+import * as Discord from "discord.js";
 import * as Winston from "winston";
+import * as ytdl from "ytdl-core";
 
 /**
  * Holds various functions that may be useful app-wide.
@@ -14,11 +16,13 @@ export class Utility
     /**
      * Download a file given a url.
      * @param {string} url The url where the file is located.
-     * @param {string} filePath The filename of the file.
-     * @returns {string} A promise containing the path and file that was written (in string form).
+     * @param {string} filename The filename of the output file.
+     * @returns {Promise<string>} A promise containing the file that was written (in string form).
      */
-    public static downloadFile(url: string, filePath: string): Promise<void>
+    public static downloadFile(url: string, filename: string): Promise<string>
     {
+        const localFile: string = path.join(__dirname, `../../${filename}`)
+
         return new Promise((resolve, reject) => 
         {
             const request: http.ClientRequest = https.get(url, response =>
@@ -31,19 +35,14 @@ export class Utility
                         reject("url cannot be null or empty.");
                     }
 
-                    if (!filePath || filePath.length === 0)
-                    {
-                        reject("filePath cannot be null or empty.");
-                    }
-
-                    const file: fs.WriteStream = fs.createWriteStream(filePath);
+                    const file: fs.WriteStream = fs.createWriteStream(localFile);
                     response.pipe(file);
 
-                    file.on('finish', () => resolve());
+                    file.on('finish', () => resolve(filename));
                 }
                 else
                 {
-                    Winston.error(`Something went wrong downloading file ${filePath} (Status Code: ${response.statusCode})`);
+                    Winston.error(`Something went wrong downloading file ${filename} (Status Code: ${response.statusCode})`);
                     Winston.error(`Url: ${url}`);
                     reject(response.statusMessage);
                 }                
@@ -63,6 +62,8 @@ export class Utility
      */
     public static normalizeMediaFile(file: string): Promise<string>
     {
+        const localFile: string = path.join(__dirname, `../../${file}`)
+
         return new Promise<string>((resolve, reject) =>
         {
             if (!file || file.length === 0)
@@ -71,21 +72,17 @@ export class Utility
             }
 
             // Do some parsing to get the right filename (the first two characters should be underscores).
-            const baseFile: string = path.basename(file).substr(2);
-            const dotLoc: number = baseFile.lastIndexOf(".");
-            const soundboardFile: string = baseFile.substr(0, dotLoc);
-            const outputFile: string = path.join(__dirname, `../../sound-files/${baseFile.substr(0, dotLoc + 1) + "mp3"}`);
+            const dotLoc: number = file.lastIndexOf(".");
+            const soundboardFile: string = file.substr(0, dotLoc);
+            const outputFile: string = path.join(__dirname, `../../effects-normalized/${file.substr(0, dotLoc + 1) + "wav"}`);
 
             const ffmpeg: child_process.ChildProcess = child_process.spawn(path.resolve(__dirname, "../../node_modules/.bin/ffmpeg.cmd"), 
             [
-                '-i', file, 
+                '-i', localFile, 
                 '-vn',
-                '-acodec', 'libmp3lame',
                 '-analyzeduration', '0',
-                '-loglevel', '0', 
+                '-loglevel', '0',
                 '-ar', '44100',
-                '-ac', '2',
-                '-q:a', '0',
                 '-map', 'a',
                 '-filter:a', 'loudnorm',
                 outputFile
@@ -93,13 +90,35 @@ export class Utility
 
             ffmpeg.on('error', e => 
             {
-                fs.unlink(file, () => reject(e.toString()));
+                fs.unlink(localFile, () => reject(e.toString()));
             });
 
             ffmpeg.on('close', () => 
             {
-                fs.unlink(file, () => resolve(soundboardFile));
+                fs.unlink(localFile, () => resolve(soundboardFile));
             });
+        });
+    }
+
+    /**
+     * Rip audio from youtube video and save it as an mp3.
+     * @param {string} url The url of the youtube video.
+     * @param {string} title The title to associate the new audio file with.
+     * @returns {Promise<string>} Promise containing local filename.
+     */
+    public static downloadFromYoutube(url: string, title: string): Promise<string>
+    {        
+        const filename: string = `${title}.wav`;
+        const localFile: string = path.join(__dirname, `../../${filename}`);
+
+        return new Promise((resolve, reject) => 
+        {
+            const stream = ytdl(url, { filter: 'audioonly' });
+            
+            const file: fs.WriteStream = fs.createWriteStream(localFile);
+            stream.pipe(file);
+
+            file.on('finish', () => resolve(filename));
         });
     }
 }
