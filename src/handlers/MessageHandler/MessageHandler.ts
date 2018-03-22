@@ -118,27 +118,53 @@ export class MessageHandler implements Handler<MessageHandlerData>
                 discordMessage.channel.send(`Downloading from youtube.`);
 
                 const matches: RegExpMatchArray = discordMessage.content.match(youtubeRe);
-                localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
+
+                if (!await Utility.effectNameExists(`${matches[2]}.wav`))
+                {
+                    // Specified name is available. Continue on.
+                    localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
                 
-                Winston.info("Download complete from youtube.");
-                discordMessage.channel.send(`Download complete.`);
+                    Winston.info("Download complete from youtube.");
+                    discordMessage.channel.send(`Download complete.`);
+                }
+                else
+                {
+                    // Specified name is taken. Prompt the user to try again with a different name and stop executing the
+                    // rest of the function.
+                    Winston.info(`Effect "${matches[2]}" already exists. Prompted user to try again with a different name.`);
+                    discordMessage.channel.send(`The name "${matches[2]}" is already in use. Please try again with a different name.`);
+                    return;
+                }
             }
         }
         else
         {
             // TODO:
             // -Add support for multiple attachments.
-            // -Add support for youtube links.
             const attachment: Discord.MessageAttachment = discordMessage.attachments.first();
 
             Winston.debug(`Attempting to download file "${attachment.filename}".`);
             discordMessage.channel.send(`Downloading '${attachment.filename}'.`);
 
-            // Download file onto local disk for processing.
-            localFile = await Utility.downloadFile(attachment.url, attachment.filename);
+            if (!await Utility.effectNameExists(attachment.filename))
+            {
+                // Specified name is available. Continue on.
 
-            Winston.debug(`Downloaded file "${localFile}".`);
-            discordMessage.channel.send(`Downloaded file '${localFile}'.`);
+                // Download file onto local disk for processing.
+                localFile = await Utility.downloadFile(attachment.url, attachment.filename);
+
+                Winston.debug(`Downloaded file "${localFile}".`);
+                discordMessage.channel.send(`Downloaded file '${localFile}'.`);
+            }
+            else
+            {
+                // Specified name is taken. Prompt the user to try again with a different name and stop executing the
+                // rest of the function.
+                const nameWithoutType: string = attachment.filename.substr(0, attachment.filename.lastIndexOf("."));
+                Winston.info(`Effect "${nameWithoutType}" already exists. Prompted user to try again with a different name.`);
+                discordMessage.channel.send(`The name "${nameWithoutType}" is already in use. Please try again with a different name.`);
+                return;
+            }            
         }
 
         Winston.debug(`Attempting to normalize file.`);

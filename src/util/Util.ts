@@ -76,4 +76,29 @@ export class Utility
             file.on('finish', () => resolve(filename));
         });
     }
+
+    /**
+     * Check to determine if the effect name already exists.
+     * @param effect The effect name to check.
+     * @returns {boolean} True if name already exists and false otherwise.
+     */
+    public static effectNameExists(effect: string): Promise<boolean>
+    {
+        const filename: string = path.join(__dirname, `../../effects-normalized/${effect}`);
+        
+        return new Promise<boolean>((resolve, reject) =>
+        {
+            fs.stat(filename, error =>
+            {
+                if (!error)
+                {
+                    resolve(true);
+                }
+                else
+                {
+                    resolve(false);
+                }
+            });
+        });
+    }
 }
