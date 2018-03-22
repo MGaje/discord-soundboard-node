@@ -4,10 +4,11 @@ import * as fs from "fs";
 import * as Discord from "discord.js";
 import * as Winston from "winston";
 
+import { AudioEngine } from "../../core/AudioEngine";
 import { DataStore } from "../../core/DataStore";
 import { Handler } from "../../interfaces/Handler";
 import { MessageHandlerData } from "./MessageHandlerData";
-import { VoiceStatus } from "../../util/Constants";
+import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
 
 /**
@@ -15,9 +16,8 @@ import { Utility } from "../../util/Util";
  */
 export class MessageHandler implements Handler<MessageHandlerData>
 {
-    private static effectsPath: string = path.resolve(__dirname, "../../../effects-normalized");
-
     private dataStore: DataStore;
+    private audioEngine: AudioEngine;
 
     /**
      * MessageHandler constructor.
@@ -46,6 +46,12 @@ export class MessageHandler implements Handler<MessageHandlerData>
             return;
         }
 
+        // Grab audio engine instance from the data store if it isn't available.
+        if (!this.audioEngine)
+        {
+            this.audioEngine = this.dataStore.get<AudioEngine>(DataStoreKeys.AudioEngineKey);
+        }
+
         // If the message is in a DM, handle new file upload.
         if (data.msg.guild === null)
         {
@@ -57,24 +63,13 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // Check for mention of the bot.
         if (data.msg.mentions.users.some(x => x.id === data.botUser.id))
         {
-            // TODO:
-            // If/When commands are implemented, only check voice status if the "play" command
-            // is used.
-            // --
-            // Ensure voice connection is good.
-            if (!data.voiceConnection || data.voiceConnection.status !== VoiceStatus.Ready)
-            {
-                throw new Error("Non-existant or invalid voice connection found.");
-            }
-
             // Parse the message into the following format:
             // parsedMessage[0] = mentioned bot user.
             // parsedMessage[1] = command.
             // parsedMessage[n where n > 1] = arguments to the command.
             const parsedMessage: string[] = data.msg.content.split(" ");
-            const args: string[] = parsedMessage.slice(2);
 
-            this.handleCommand(parsedMessage[1], args, data.voiceConnection);
+            this.handleCommand(parsedMessage[1], parsedMessage.slice(2));
         }
     }
 
@@ -82,9 +77,8 @@ export class MessageHandler implements Handler<MessageHandlerData>
      * Handle the command sent to the bot via a Discord message.
      * @param {string} cmd The command to handle.
      * @param {string[]} args The arguments to the command.
-     * @param {Discord.VoiceConnection} voiceConnection The voice connection to use to play sound.
      */
-    private handleCommand(cmd: string, args: string[], voiceConnection: Discord.VoiceConnection)
+    private handleCommand(cmd: string, args: string[])
     {
         if (!cmd || cmd.length === 0)
         {
@@ -101,28 +95,11 @@ export class MessageHandler implements Handler<MessageHandlerData>
         switch (cmd.toLowerCase())
         {
             case "play":
-                return this.handlePlay(args[0], voiceConnection);
+                return this.audioEngine.play(args[0]);
 
             default:
                 break;
         }
-    }
-
-    /**
-     * 
-     * @param toPlay 
-     * @param voiceConnection 
-     */
-    private handlePlay(toPlay: string, voiceConnection: Discord.VoiceConnection)
-    {
-        if (!toPlay || toPlay.length === 0)
-        {
-            throw new Error("toPlay cannot be null or empty.")
-        }
-
-        // Play local file.
-        const effectFile: string = path.join(MessageHandler.effectsPath, `${toPlay}.wav`);
-        voiceConnection.playFile(effectFile);
     }
 
     /**
@@ -158,7 +135,6 @@ export class MessageHandler implements Handler<MessageHandlerData>
             discordMessage.channel.send(`Downloading '${attachment.filename}'.`);
 
             // Download file onto local disk for processing.
-            //const localFile: string = path.join(__dirname, `../../__${attachment.filename}`)
             localFile = await Utility.downloadFile(attachment.url, attachment.filename);
 
             Winston.debug(`Downloaded file "${localFile}".`);
@@ -169,7 +145,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
         discordMessage.channel.send(`Processing file.`);
 
         // Normalize (and extract if it's a video file) the audio and convert to mp3.
-        const soundboardFile: string = await Utility.normalizeMediaFile(localFile);
+        const soundboardFile: string = await this.audioEngine.normalize(localFile);
         
         Winston.debug(`Normalized file.`);
         discordMessage.channel.send(`Processing complete. You may now play "${soundboardFile}" in the voice channel.`);
