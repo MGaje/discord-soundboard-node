@@ -19,7 +19,7 @@ export class DataStore
      * @param {string} key The key of the element in the store.
      * @returns {any} The value of the key-value pair in the store.
      */
-    public get(key: string)
+    public get<T>(key: string): T
     {
         return this._store.get(key);
     }

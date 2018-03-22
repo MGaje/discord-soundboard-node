@@ -5,11 +5,12 @@ import { DataStore } from "./DataStore";
 import { Config } from "./Config";
 import { CommandHandler } from "../handlers/CommandHandler/CommandHandler";
 import { MessageHandler } from "../handlers/MessageHandler/MessageHandler";
+import { DataStoreKeys } from "../util/Constants";
+import { AudioEngine } from "../core/AudioEngine";
 
 export class Soundboard
 {
     private botClient: Discord.Client;
-    private voiceConnection: Discord.VoiceConnection;
     private isVoiceConnected: boolean;
     private config: Config;
     private dataStore: DataStore;
@@ -63,11 +64,12 @@ export class Soundboard
         {
             try
             {
-                await this.messageHandler.handle({ msg: msg, voiceConnection: this.voiceConnection, botUser: this.botClient.user });
+                await this.messageHandler.handle({ msg: msg, botUser: this.botClient.user });
             }
             catch (error)
             {
                 Winston.error(error.toString());
+                throw error;
             }
         });
 
@@ -83,6 +85,7 @@ export class Soundboard
             catch (error)
             {
                 Winston.error(error.toString());
+                throw error;
             }
         });
     }
@@ -96,39 +99,18 @@ export class Soundboard
         if (!voiceChannel)
         {
             Winston.error(`Cannot find voice channel with id ${this.config.voiceChannel}`);
-            throw new Error("Cannot find specified voice channel.");
+            return;
         }
 
-        this.voiceConnection = await voiceChannel.join();
-
-        // These events don't seem to be emitted?
-        this.voiceConnection.on("debug", msg => 
+        try
         {
-            Winston.debug(`[Voice Connection Debug] ${msg}`);
-        });
-        this.voiceConnection.on("disconnect", () =>
+            // Create and store the audio engine in the data store.
+            this.dataStore.set(DataStoreKeys.AudioEngineKey, new AudioEngine(await voiceChannel.join()));
+        }
+        catch (error)
         {
-            Winston.info("Disconnected from the voice channel.");
-            this.voiceConnection.removeAllListeners();
-            this.voiceConnection.disconnect();
-            this.voiceConnection = null;
-            this.isVoiceConnected = false;
-        });
-        this.voiceConnection.on("error", e =>
-        {
-            Winston.error(`Voice connection error: ${e.message}`);
-            this.voiceConnection.removeAllListeners();
-            this.voiceConnection.disconnect();
-            this.voiceConnection = null;
-            this.isVoiceConnected = false;
-        });
-        this.voiceConnection.on("failed", e =>
-        {
-            Winston.error(`Failed to connect to voice: ${e.message}`);
-            this.voiceConnection.removeAllListeners();
-            this.voiceConnection.disconnect();
-            this.voiceConnection = null;
-            this.isVoiceConnected = false;
-        });
+            Winston.error(error.toString());
+            throw error;
+        }
     }
 }

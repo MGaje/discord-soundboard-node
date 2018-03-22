@@ -10,3 +10,10 @@ export const VoiceStatus = {
     Nearly: 4,
     Disconnected: 5
 };
+
+/**
+ * Data store keys--used when setting/getting with the data store.
+ */
+export const DataStoreKeys = {
+    AudioEngineKey: "audio-engine"
+};
