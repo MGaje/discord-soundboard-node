@@ -5,7 +5,6 @@ import * as child_process from "child_process";
 import * as path from "path";
 
 import * as Discord from "discord.js";
-import * as Winston from "winston";
 import * as ytdl from "ytdl-core";
 
 /**
@@ -42,14 +41,14 @@ export class Utility
                 }
                 else
                 {
-                    Winston.error(`Something went wrong downloading file ${filename} (Status Code: ${response.statusCode})`);
-                    Winston.error(`Url: ${url}`);
+                    console.error(`Something went wrong downloading file ${filename} (Status Code: ${response.statusCode})`);
+                    console.error(`Url: ${url}`);
                     reject(response.statusMessage);
                 }                
             });
 
             request.setTimeout(12000, () => {
-                Winston.warn(`Request timed out for url: ${url}`);
+                console.log(`Request timed out for url: ${url}`);
                 request.abort();
             });
         });

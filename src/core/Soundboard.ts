@@ -1,5 +1,4 @@
 import * as Discord from "discord.js"
-import * as Winston from "winston";
 
 import { DataStore } from "./DataStore";
 import { Config } from "./Config";
@@ -37,10 +36,10 @@ export class Soundboard
      */
     public async run(): Promise<void>
     {
-        Winston.debug("Setting up event listeners.");
+        console.log("Setting up event listeners.");
         await this.setupListeners();
 
-        Winston.info("Attempting to login.");
+        console.log("Attempting to login.");
         await this.botClient.login(this.config.botToken);
     }
 
@@ -52,11 +51,11 @@ export class Soundboard
         // Upon successful Discord connection.
         this.botClient.on("ready", async () =>
         {
-            Winston.info("Connected to Discord. Ready.");
+            console.log("Connected to Discord. Ready.");
 
-            Winston.info("Attempting to join voice channel.");
+            console.log("Attempting to join voice channel.");
             await this.connectToVoice();
-            Winston.info("Connected to voice channel.");
+            console.log("Connected to voice channel.");
         });
 
         // Upon receiving a Discord message.
@@ -68,7 +67,7 @@ export class Soundboard
             }
             catch (error)
             {
-                Winston.error(error.toString());
+                console.error(error.toString());
                 throw error;
             }
         });
@@ -84,7 +83,7 @@ export class Soundboard
             }
             catch (error)
             {
-                Winston.error(error.toString());
+                console.error(error.toString());
                 throw error;
             }
         });
@@ -98,7 +97,7 @@ export class Soundboard
         const voiceChannel: Discord.VoiceChannel = this.botClient.channels.find(x => x.id === this.config.voiceChannel) as Discord.VoiceChannel;
         if (!voiceChannel)
         {
-            Winston.error(`Cannot find voice channel with id ${this.config.voiceChannel}`);
+            console.error(`Cannot find voice channel with id ${this.config.voiceChannel}`);
             return;
         }
 
@@ -109,7 +108,7 @@ export class Soundboard
         }
         catch (error)
         {
-            Winston.error(error.toString());
+            console.error(error.toString());
             throw error;
         }
     }

@@ -5,7 +5,6 @@ import * as child_process from "child_process";
 import * as path from "path";
 
 import * as Discord from "discord.js";
-import * as Winston from "winston";
 import * as ytdl from "ytdl-core";
 
 import { VoiceStatus } from "../util/Constants";
@@ -117,24 +116,24 @@ export class AudioEngine
         // These events don't seem to be emitted?
         this.voiceConnection.on("debug", msg => 
         {
-            Winston.debug(`[Voice Connection Debug] ${msg}`);
+            console.log(`[Voice Connection Debug] ${msg}`);
         });
         this.voiceConnection.on("disconnect", () =>
         {
-            Winston.info("Disconnected from the voice channel.");
+            console.log("Disconnected from the voice channel.");
             this.voiceConnection.removeAllListeners();
             this.voiceConnection.disconnect();
             this.voiceConnection = null;
         });
         this.voiceConnection.on("error", e =>
         {
-            Winston.error(`Voice connection error: ${e.message}`);
+            console.error(`Voice connection error: ${e.message}`);
             this.voiceConnection.removeAllListeners();
             this.voiceConnection.disconnect();
         });
         this.voiceConnection.on("failed", e =>
         {
-            Winston.error(`Failed to connect to voice: ${e.message}`);
+            console.error(`Failed to connect to voice: ${e.message}`);
             this.voiceConnection.removeAllListeners();
             this.voiceConnection.disconnect();
             this.voiceConnection = null;

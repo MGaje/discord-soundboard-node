@@ -2,7 +2,6 @@ import * as path from "path";
 import * as fs from "fs";
 
 import * as Discord from "discord.js";
-import * as Winston from "winston";
 
 import { AudioEngine } from "../../core/AudioEngine";
 import { DataStore } from "../../core/DataStore";
@@ -114,7 +113,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
             const youtubeRe: RegExp = /^(https:\/\/www\.youtube\.com\/watch\?v=[\w-]+) (\w+)$/;
             if (youtubeRe.test(discordMessage.content))
             {
-                Winston.info("Downloading from youtube...");
+                console.log("Downloading from youtube...");
                 discordMessage.channel.send(`Downloading from youtube.`);
 
                 const matches: RegExpMatchArray = discordMessage.content.match(youtubeRe);
@@ -124,14 +123,14 @@ export class MessageHandler implements Handler<MessageHandlerData>
                     // Specified name is available. Continue on.
                     localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
                 
-                    Winston.info("Download complete from youtube.");
+                    console.log("Download complete from youtube.");
                     discordMessage.channel.send(`Download complete.`);
                 }
                 else
                 {
                     // Specified name is taken. Prompt the user to try again with a different name and stop executing the
                     // rest of the function.
-                    Winston.info(`Effect "${matches[2]}" already exists. Prompted user to try again with a different name.`);
+                    console.log(`Effect "${matches[2]}" already exists. Prompted user to try again with a different name.`);
                     discordMessage.channel.send(`The name "${matches[2]}" is already in use. Please try again with a different name.`);
                     return;
                 }
@@ -143,7 +142,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
             // -Add support for multiple attachments.
             const attachment: Discord.MessageAttachment = discordMessage.attachments.first();
 
-            Winston.debug(`Attempting to download file "${attachment.filename}".`);
+            console.log(`Attempting to download file "${attachment.filename}".`);
             discordMessage.channel.send(`Downloading '${attachment.filename}'.`);
 
             if (!await Utility.effectNameExists(attachment.filename))
@@ -153,7 +152,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
                 // Download file onto local disk for processing.
                 localFile = await Utility.downloadFile(attachment.url, attachment.filename);
 
-                Winston.debug(`Downloaded file "${localFile}".`);
+                console.log(`Downloaded file "${localFile}".`);
                 discordMessage.channel.send(`Downloaded file '${localFile}'.`);
             }
             else
@@ -161,19 +160,19 @@ export class MessageHandler implements Handler<MessageHandlerData>
                 // Specified name is taken. Prompt the user to try again with a different name and stop executing the
                 // rest of the function.
                 const nameWithoutType: string = attachment.filename.substr(0, attachment.filename.lastIndexOf("."));
-                Winston.info(`Effect "${nameWithoutType}" already exists. Prompted user to try again with a different name.`);
+                console.log(`Effect "${nameWithoutType}" already exists. Prompted user to try again with a different name.`);
                 discordMessage.channel.send(`The name "${nameWithoutType}" is already in use. Please try again with a different name.`);
                 return;
             }            
         }
 
-        Winston.debug(`Attempting to normalize file.`);
+        console.log(`Attempting to normalize file.`);
         discordMessage.channel.send(`Processing file.`);
 
         // Normalize (and extract if it's a video file) the audio and convert to mp3.
         const soundboardFile: string = await this.audioEngine.normalize(localFile);
         
-        Winston.debug(`Normalized file.`);
+        console.log(`Normalized file.`);
         discordMessage.channel.send(`Processing complete. You may now play "${soundboardFile}" in the voice channel.`);
     }
 }

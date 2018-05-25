@@ -1,5 +1,4 @@
 import * as Discord from "discord.js";
-import * as Winston from "winston";
 
 import { DataStore } from "../../core/DataStore";
 import { Handler } from "../../interfaces/Handler";
@@ -69,7 +68,7 @@ export class CommandHandler implements Handler<CommandHandlerData>
      */
     private commandList()
     {
-        Winston.info("Supported commands: quit");
+        console.log("Supported commands: quit");
     }
 
     /**
@@ -78,6 +77,6 @@ export class CommandHandler implements Handler<CommandHandlerData>
      */
     private unsupportedCommand(cmd: string)
     {
-        Winston.debug(`This bot does not support the "${cmd}" command.`);
+        console.log(`This bot does not support the "${cmd}" command.`);
     }
 }
