@@ -1,4 +1,4 @@
 export interface Handler<T>
 {
-    handle(data: T);
+    handle(data: T): void;
 }
