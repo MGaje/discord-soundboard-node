@@ -1,6 +1,6 @@
 import * as Discord from "discord.js";
 
-export interface CommandHandlerData
+export interface ICommandHandlerData
 {
     command: string;
     discordClient: Discord.Client;

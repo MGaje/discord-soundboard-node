@@ -1,22 +1,22 @@
 import * as Discord from "discord.js";
 
-import { DataStore } from "../../core/DataStore";
-import { Handler } from "../../interfaces/Handler";
-import { CommandHandlerData } from "./CommandHandlerData";
+import { Storable } from "../../DataStore/Storable";
+import { Handler } from "../../handlers/Handler";
+import { ICommandHandlerData } from "./ICommandHandlerData";
 
 /**
  * Handler for commands that originate from user input.
  */
-export class CommandHandler implements Handler<CommandHandlerData>
+export class CommandHandler implements Handler<ICommandHandlerData>
 {
-    private readonly dataStore: DataStore;
+    private readonly dataStore: Storable;
 
     /**
      * CommandHandler constructor.
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: DataStore)
+    constructor(dataStore?: Storable)
     {
         this.dataStore = dataStore;
     }
@@ -25,7 +25,7 @@ export class CommandHandler implements Handler<CommandHandlerData>
      * Handle incoming commands from user input.
      * @param {CommandHandlerData} data Specified data that may be needed for a command.
      */
-    public handle(data: CommandHandlerData)
+    public handle(data: ICommandHandlerData)
     {
         if (!data)
         {

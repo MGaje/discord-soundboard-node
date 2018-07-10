@@ -3,27 +3,29 @@ import * as fs from "fs";
 
 import * as Discord from "discord.js";
 
-import { AudioEngine } from "../../core/AudioEngine";
-import { DataStore } from "../../core/DataStore";
-import { Handler } from "../../interfaces/Handler";
-import { MessageHandlerData } from "./MessageHandlerData";
+import { IAudioEngine } from "../../AudioEngine/IAudioEngine";
+import { IffmpegWrapper } from "../../FfmpegWrapper/IffmpegWrapper";
+import { FfmpegWrapper } from "../../FfmpegWrapper/FfmpegWrapper";
+import { Storable } from "../../DataStore/Storable";
+import { Handler } from "../../handlers/Handler";
+import { IMessageHandlerData } from "./IMessageHandlerData";
 import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
 
 /**
  * Handler for incoming Discord messages.
  */
-export class MessageHandler implements Handler<MessageHandlerData>
+export class MessageHandler implements Handler<IMessageHandlerData>
 {
-    private dataStore: DataStore;
-    private audioEngine: AudioEngine;
+    private dataStore: Storable;
+    private audioEngine: IAudioEngine;
 
     /**
      * MessageHandler constructor.
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: DataStore)
+    constructor(dataStore?: Storable)
     {
         this.dataStore = dataStore;
     }
@@ -32,7 +34,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
      * Handle incoming messages from Discord.
      * @param {MessageHandlerData} data Specified data that may be needed for a command.
      */
-    public async handle(data: MessageHandlerData)
+    public async handle(data: IMessageHandlerData)
     {
         if (!data)
         {
@@ -48,7 +50,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // Grab audio engine instance from the data store if it isn't available.
         if (!this.audioEngine)
         {
-            this.audioEngine = this.dataStore.get<AudioEngine>(DataStoreKeys.AudioEngineKey);
+            this.audioEngine = this.dataStore.get<IAudioEngine>(DataStoreKeys.AudioEngineKey);
         }
 
         // If the message is in a DM, handle new file upload.
@@ -83,13 +85,6 @@ export class MessageHandler implements Handler<MessageHandlerData>
         {
             throw new Error("Command cannot be null or empty.");
         }
-
-        // TODO
-        // ---
-        // This method doesn't really handle "commands" as it does just use the command name
-        // as a wav file title. In the future, I hope to incorporate a "play" command that will
-        // facilitate the actual wav file playing. However, the behavior now is the behavior
-        // seen in the .NET version of the bot.
 
         switch (cmd.toLowerCase())
         {
@@ -170,7 +165,8 @@ export class MessageHandler implements Handler<MessageHandlerData>
         discordMessage.channel.send(`Processing file.`);
 
         // Normalize (and extract if it's a video file) the audio and convert to mp3.
-        const soundboardFile: string = await this.audioEngine.normalize(localFile);
+        const ffmpegWrapper: IffmpegWrapper = new FfmpegWrapper();
+        const soundboardFile: string = await ffmpegWrapper.normalize(localFile);
         
         console.log(`Normalized file.`);
         discordMessage.channel.send(`Processing complete. You may now play "${soundboardFile}" in the voice channel.`);
