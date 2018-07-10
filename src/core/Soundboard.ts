@@ -6,7 +6,7 @@ import { Config } from "./Config";
 import { CommandHandler } from "../handlers/CommandHandler/CommandHandler";
 import { MessageHandler } from "../handlers/MessageHandler/MessageHandler";
 import { DataStoreKeys } from "../util/Constants";
-import { AudioEngine } from "../core/AudioEngine";
+import { AudioEngine } from "../AudioEngine/AudioEngine";
 
 export class Soundboard
 {

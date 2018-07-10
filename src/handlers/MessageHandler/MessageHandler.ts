@@ -3,7 +3,9 @@ import * as fs from "fs";
 
 import * as Discord from "discord.js";
 
-import { AudioEngine } from "../../core/AudioEngine";
+import { AudioEngineInterface } from "../../AudioEngine/AudioEngineInterface";
+import { FfmpegOperable } from "../../FfmpegWrapper/FfmpegOperable";
+import { FfmpegWrapper } from "../../FfmpegWrapper/FfmpegWrapper";
 import { Storable } from "../../DataStore/Storable";
 import { Handler } from "../../handlers/Handler";
 import { MessageHandlerData } from "./MessageHandlerData";
@@ -16,7 +18,7 @@ import { Utility } from "../../util/Util";
 export class MessageHandler implements Handler<MessageHandlerData>
 {
     private dataStore: Storable;
-    private audioEngine: AudioEngine;
+    private audioEngine: AudioEngineInterface;
 
     /**
      * MessageHandler constructor.
@@ -48,7 +50,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // Grab audio engine instance from the data store if it isn't available.
         if (!this.audioEngine)
         {
-            this.audioEngine = this.dataStore.get<AudioEngine>(DataStoreKeys.AudioEngineKey);
+            this.audioEngine = this.dataStore.get<AudioEngineInterface>(DataStoreKeys.AudioEngineKey);
         }
 
         // If the message is in a DM, handle new file upload.
@@ -163,7 +165,8 @@ export class MessageHandler implements Handler<MessageHandlerData>
         discordMessage.channel.send(`Processing file.`);
 
         // Normalize (and extract if it's a video file) the audio and convert to mp3.
-        const soundboardFile: string = await this.audioEngine.normalize(localFile);
+        const ffmpegWrapper: FfmpegOperable = new FfmpegWrapper();
+        const soundboardFile: string = await ffmpegWrapper.normalize(localFile);
         
         console.log(`Normalized file.`);
         discordMessage.channel.send(`Processing complete. You may now play "${soundboardFile}" in the voice channel.`);

@@ -1,18 +1,16 @@
-import * as https from "https";
-import * as http from "http";
 import * as fs from "fs";
 import * as child_process from "child_process";
 import * as path from "path";
 
 import * as Discord from "discord.js";
-import * as ytdl from "ytdl-core";
 
 import { VoiceStatus } from "../util/Constants";
+import { AudioEngineInterface } from "./AudioEngineInterface";
 
 /**
  * The audio engine handles all things audio, which is really just playing and normalizing.
  */
-export class AudioEngine
+export class AudioEngine implements AudioEngineInterface
 {
     private static readonly EffectsPath: string = path.resolve(__dirname, "../../effects-normalized");
 
