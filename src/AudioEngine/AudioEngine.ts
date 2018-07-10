@@ -5,12 +5,12 @@ import * as path from "path";
 import * as Discord from "discord.js";
 
 import { VoiceStatus } from "../util/Constants";
-import { AudioEngineInterface } from "./AudioEngineInterface";
+import { IAudioEngine } from "./IAudioEngine";
 
 /**
  * The audio engine handles all things audio, which is really just playing and normalizing.
  */
-export class AudioEngine implements AudioEngineInterface
+export class AudioEngine implements IAudioEngine
 {
     private static readonly EffectsPath: string = path.resolve(__dirname, "../../effects-normalized");
 

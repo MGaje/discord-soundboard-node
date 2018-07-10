@@ -2,9 +2,9 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import * as path from "path";
 
-import { FfmpegOperable } from "./FfmpegOperable";
+import { IffmpegWrapper } from "./IffmpegWrapper";
 
-export class FfmpegWrapper implements FfmpegOperable
+export class FfmpegWrapper implements IffmpegWrapper
 {
     /**
      * Normalize specified media file.

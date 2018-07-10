@@ -3,22 +3,22 @@ import * as fs from "fs";
 
 import * as Discord from "discord.js";
 
-import { AudioEngineInterface } from "../../AudioEngine/AudioEngineInterface";
-import { FfmpegOperable } from "../../FfmpegWrapper/FfmpegOperable";
+import { IAudioEngine } from "../../AudioEngine/IAudioEngine";
+import { IffmpegWrapper } from "../../FfmpegWrapper/IffmpegWrapper";
 import { FfmpegWrapper } from "../../FfmpegWrapper/FfmpegWrapper";
 import { Storable } from "../../DataStore/Storable";
 import { Handler } from "../../handlers/Handler";
-import { MessageHandlerData } from "./MessageHandlerData";
+import { IMessageHandlerData } from "./IMessageHandlerData";
 import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
 
 /**
  * Handler for incoming Discord messages.
  */
-export class MessageHandler implements Handler<MessageHandlerData>
+export class MessageHandler implements Handler<IMessageHandlerData>
 {
     private dataStore: Storable;
-    private audioEngine: AudioEngineInterface;
+    private audioEngine: IAudioEngine;
 
     /**
      * MessageHandler constructor.
@@ -34,7 +34,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
      * Handle incoming messages from Discord.
      * @param {MessageHandlerData} data Specified data that may be needed for a command.
      */
-    public async handle(data: MessageHandlerData)
+    public async handle(data: IMessageHandlerData)
     {
         if (!data)
         {
@@ -50,7 +50,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
         // Grab audio engine instance from the data store if it isn't available.
         if (!this.audioEngine)
         {
-            this.audioEngine = this.dataStore.get<AudioEngineInterface>(DataStoreKeys.AudioEngineKey);
+            this.audioEngine = this.dataStore.get<IAudioEngine>(DataStoreKeys.AudioEngineKey);
         }
 
         // If the message is in a DM, handle new file upload.
@@ -165,7 +165,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
         discordMessage.channel.send(`Processing file.`);
 
         // Normalize (and extract if it's a video file) the audio and convert to mp3.
-        const ffmpegWrapper: FfmpegOperable = new FfmpegWrapper();
+        const ffmpegWrapper: IffmpegWrapper = new FfmpegWrapper();
         const soundboardFile: string = await ffmpegWrapper.normalize(localFile);
         
         console.log(`Normalized file.`);

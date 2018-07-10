@@ -1,4 +1,4 @@
-export interface FfmpegOperable
+export interface IffmpegWrapper
 {
     normalize(file: string): Promise<string>;
 }
