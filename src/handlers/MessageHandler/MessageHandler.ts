@@ -4,8 +4,8 @@ import * as fs from "fs";
 import * as Discord from "discord.js";
 
 import { AudioEngine } from "../../core/AudioEngine";
-import { DataStore } from "../../core/DataStore";
-import { Handler } from "../../interfaces/Handler";
+import { Storable } from "../../DataStore/Storable";
+import { Handler } from "../../handlers/Handler";
 import { MessageHandlerData } from "./MessageHandlerData";
 import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
@@ -15,7 +15,7 @@ import { Utility } from "../../util/Util";
  */
 export class MessageHandler implements Handler<MessageHandlerData>
 {
-    private dataStore: DataStore;
+    private dataStore: Storable;
     private audioEngine: AudioEngine;
 
     /**
@@ -23,7 +23,7 @@ export class MessageHandler implements Handler<MessageHandlerData>
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: DataStore)
+    constructor(dataStore?: Storable)
     {
         this.dataStore = dataStore;
     }
@@ -83,13 +83,6 @@ export class MessageHandler implements Handler<MessageHandlerData>
         {
             throw new Error("Command cannot be null or empty.");
         }
-
-        // TODO
-        // ---
-        // This method doesn't really handle "commands" as it does just use the command name
-        // as a wav file title. In the future, I hope to incorporate a "play" command that will
-        // facilitate the actual wav file playing. However, the behavior now is the behavior
-        // seen in the .NET version of the bot.
 
         switch (cmd.toLowerCase())
         {

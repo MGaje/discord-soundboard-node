@@ -1,7 +1,7 @@
 import * as Discord from "discord.js";
 
-import { DataStore } from "../../core/DataStore";
-import { Handler } from "../../interfaces/Handler";
+import { Storable } from "../../DataStore/Storable";
+import { Handler } from "../../handlers/Handler";
 import { CommandHandlerData } from "./CommandHandlerData";
 
 /**
@@ -9,14 +9,14 @@ import { CommandHandlerData } from "./CommandHandlerData";
  */
 export class CommandHandler implements Handler<CommandHandlerData>
 {
-    private readonly dataStore: DataStore;
+    private readonly dataStore: Storable;
 
     /**
      * CommandHandler constructor.
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: DataStore)
+    constructor(dataStore?: Storable)
     {
         this.dataStore = dataStore;
     }

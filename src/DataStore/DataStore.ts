@@ -1,7 +1,9 @@
+import { Storable } from './Storable';
+
 /**
  * Class for application wide data storage.
  */
-export class DataStore
+export class DataStore implements Storable
 {
     private _store: Map<string, any>;
 
@@ -11,7 +13,7 @@ export class DataStore
      */
     constructor()
     {
-        this._store = new Map<string ,any>();
+        this._store = new Map<string, any>();
     }
 
     /**
