@@ -1,9 +1,9 @@
-import { Storable } from './Storable';
+import { IStorable } from './IStorable';
 
 /**
  * Class for application wide data storage.
  */
-export class DataStore implements Storable
+export class DataStore implements IStorable
 {
     private _store: Map<string, any>;
 
