@@ -1,6 +1,6 @@
 import * as Discord from "discord.js"
 
-import { Storable } from "../DataStore/Storable";
+import { IStorable } from "../DataStore/IStorable";
 import { DataStore } from "../DataStore/DataStore";
 import { Config } from "./Config";
 import { CommandHandler } from "../handlers/CommandHandler/CommandHandler";
@@ -13,7 +13,7 @@ export class Soundboard
     private botClient: Discord.Client;
     private isVoiceConnected: boolean;
     private config: Config;
-    private dataStore: Storable;
+    private dataStore: IStorable;
     private commandHandler: CommandHandler;
     private messageHandler: MessageHandler;
     private stdin: NodeJS.Socket;

@@ -1,6 +1,6 @@
 import * as Discord from "discord.js";
 
-import { Storable } from "../../DataStore/Storable";
+import { IStorable } from "../../DataStore/IStorable";
 import { Handler } from "../../handlers/Handler";
 import { ICommandHandlerData } from "./ICommandHandlerData";
 
@@ -9,14 +9,14 @@ import { ICommandHandlerData } from "./ICommandHandlerData";
  */
 export class CommandHandler implements Handler<ICommandHandlerData>
 {
-    private readonly dataStore: Storable;
+    private readonly dataStore: IStorable;
 
     /**
      * CommandHandler constructor.
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: Storable)
+    constructor(dataStore?: IStorable)
     {
         this.dataStore = dataStore;
     }

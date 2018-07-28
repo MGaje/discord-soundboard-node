@@ -6,8 +6,8 @@ import * as Discord from "discord.js";
 import { IAudioEngine } from "../../AudioEngine/IAudioEngine";
 import { IffmpegWrapper } from "../../FfmpegWrapper/IffmpegWrapper";
 import { FfmpegWrapper } from "../../FfmpegWrapper/FfmpegWrapper";
-import { Storable } from "../../DataStore/Storable";
-import { Handler } from "../../handlers/Handler";
+import { IStorable } from "../../DataStore/IStorable";
+import { Handler } from "../Handler";
 import { IMessageHandlerData } from "./IMessageHandlerData";
 import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
@@ -17,7 +17,7 @@ import { Utility } from "../../util/Util";
  */
 export class MessageHandler implements Handler<IMessageHandlerData>
 {
-    private dataStore: Storable;
+    private dataStore: IStorable;
     private audioEngine: IAudioEngine;
 
     /**
@@ -25,7 +25,7 @@ export class MessageHandler implements Handler<IMessageHandlerData>
      * @constructor
      * @param {DataStore} dataStore (Optional) Reference to the data store.
      */
-    constructor(dataStore?: Storable)
+    constructor(dataStore?: IStorable)
     {
         this.dataStore = dataStore;
     }
