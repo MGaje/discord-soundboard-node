@@ -105,31 +105,31 @@ export class MessageHandler implements Handler<IMessageHandlerData>
         let localFile: string = null;
         if (discordMessage.attachments.size === 0)
         {
-            const youtubeRe: RegExp = /^(https:\/\/www\.youtube\.com\/watch\?v=[\w-]+) (\w+)$/;
-            if (youtubeRe.test(discordMessage.content))
-            {
-                console.log("Downloading from youtube...");
-                discordMessage.channel.send(`Downloading from youtube.`);
+            // const youtubeRe: RegExp = /^(https:\/\/www\.youtube\.com\/watch\?v=[\w-]+) (\w+)$/;
+            // if (youtubeRe.test(discordMessage.content))
+            // {
+            //     console.log("Downloading from youtube...");
+            //     discordMessage.channel.send(`Downloading from youtube.`);
 
-                const matches: RegExpMatchArray = discordMessage.content.match(youtubeRe);
+            //     const matches: RegExpMatchArray = discordMessage.content.match(youtubeRe);
 
-                if (!await Utility.effectNameExists(`${matches[2]}.wav`))
-                {
-                    // Specified name is available. Continue on.
-                    localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
+            //     if (!await Utility.effectNameExists(`${matches[2]}.wav`))
+            //     {
+            //         // Specified name is available. Continue on.
+            //         localFile = await Utility.downloadFromYoutube(matches[1], matches[2]);
                 
-                    console.log("Download complete from youtube.");
-                    discordMessage.channel.send(`Download complete.`);
-                }
-                else
-                {
-                    // Specified name is taken. Prompt the user to try again with a different name and stop executing the
-                    // rest of the function.
-                    console.log(`Effect "${matches[2]}" already exists. Prompted user to try again with a different name.`);
-                    discordMessage.channel.send(`The name "${matches[2]}" is already in use. Please try again with a different name.`);
-                    return;
-                }
-            }
+            //         console.log("Download complete from youtube.");
+            //         discordMessage.channel.send(`Download complete.`);
+            //     }
+            //     else
+            //     {
+            //         // Specified name is taken. Prompt the user to try again with a different name and stop executing the
+            //         // rest of the function.
+            //         console.log(`Effect "${matches[2]}" already exists. Prompted user to try again with a different name.`);
+            //         discordMessage.channel.send(`The name "${matches[2]}" is already in use. Please try again with a different name.`);
+            //         return;
+            //     }
+            // }
         }
         else
         {

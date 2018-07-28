@@ -72,3 +72,6 @@ config.json
 # Folder that contains the sound effects.
 effects/
 effects-normalized/
+
+# Convert script used to convert base effects to normalized ones.
+convert.sh
