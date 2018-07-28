@@ -11,6 +11,7 @@ import { Handler } from "../Handler";
 import { IMessageHandlerData } from "./IMessageHandlerData";
 import { DataStoreKeys } from "../../util/Constants";
 import { Utility } from "../../util/Util";
+import { ISoundEffectsHelper } from "../../SoundEffectsHelper/ISoundEffectsHelper";
 
 /**
  * Handler for incoming Discord messages.
@@ -19,6 +20,7 @@ export class MessageHandler implements Handler<IMessageHandlerData>
 {
     private dataStore: IStorable;
     private audioEngine: IAudioEngine;
+    private soundEffectsHelper: ISoundEffectsHelper;
 
     /**
      * MessageHandler constructor.
@@ -53,6 +55,12 @@ export class MessageHandler implements Handler<IMessageHandlerData>
             this.audioEngine = this.dataStore.get<IAudioEngine>(DataStoreKeys.AudioEngineKey);
         }
 
+        // Grab sound effect helper instance from the data store if it isn't available.
+        if (!this.soundEffectsHelper)
+        {
+            this.soundEffectsHelper = this.dataStore.get<ISoundEffectsHelper>(DataStoreKeys.SoundEffectsHelperKey);
+        }
+
         // If the message is in a DM, handle new file upload.
         if (data.msg.guild === null)
         {
@@ -70,16 +78,17 @@ export class MessageHandler implements Handler<IMessageHandlerData>
             // parsedMessage[n where n > 1] = arguments to the command.
             const parsedMessage: string[] = data.msg.content.split(" ");
 
-            this.handleCommand(parsedMessage[1], parsedMessage.slice(2));
+            this.handleCommand(data.msg.channel as Discord.TextChannel, parsedMessage[1], parsedMessage.slice(2));
         }
     }
 
     /**
      * Handle the command sent to the bot via a Discord message.
+     * @param {Discord.Channel} The discord channel the message originated from.
      * @param {string} cmd The command to handle.
      * @param {string[]} args The arguments to the command.
      */
-    private handleCommand(cmd: string, args: string[])
+    private handleCommand(channel: Discord.TextChannel, cmd: string, args: string[])
     {
         if (!cmd || cmd.length === 0)
         {
@@ -91,8 +100,29 @@ export class MessageHandler implements Handler<IMessageHandlerData>
             case "play":
                 return this.audioEngine.play(args[0]);
 
+            case "list":
+                return this.listEffects(channel);
+                
+
             default:
                 break;
+        }
+    }
+
+    /**
+     * Send list of sound effects to channel the prompt was from.
+     * @param channel {Discord.TextChannel} The discord channel the message originated from.
+     */
+    private async listEffects(channel: Discord.TextChannel)
+    {
+        try
+        {
+            const soundEffects: string = (await this.soundEffectsHelper.list()).join(", ");
+            channel.send(`**Supported sound effects**: ${soundEffects}`);
+        }
+        catch (e)
+        {
+            console.error(e.toString());
         }
     }
 

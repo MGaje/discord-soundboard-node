@@ -15,5 +15,6 @@ export const VoiceStatus = {
  * Data store keys--used when setting/getting with the data store.
  */
 export const DataStoreKeys = {
-    AudioEngineKey: "audio-engine"
+    AudioEngineKey: "audio-engine",
+    SoundEffectsHelperKey: "sound-effects-helper"
 };

@@ -7,6 +7,8 @@ import { CommandHandler } from "../handlers/CommandHandler/CommandHandler";
 import { MessageHandler } from "../handlers/MessageHandler/MessageHandler";
 import { DataStoreKeys } from "../util/Constants";
 import { AudioEngine } from "../AudioEngine/AudioEngine";
+import { ISoundEffectsHelper } from "../SoundEffectsHelper/ISoundEffectsHelper";
+import { SoundEffectsHelper } from "../SoundEffectsHelper/SoundEffectsHelper";
 
 export class Soundboard
 {
@@ -37,6 +39,8 @@ export class Soundboard
      */
     public async run(): Promise<void>
     {
+        this.dataStore.set(DataStoreKeys.SoundEffectsHelperKey, new SoundEffectsHelper());
+
         console.log("Setting up event listeners.");
         await this.setupListeners();
 
